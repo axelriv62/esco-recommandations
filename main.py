@@ -12,6 +12,7 @@ def menu():
         partie1question2()
     elif choice == '9':
         print("Au revoir !")
+        return
     else:
         print("Choix invalide, veuillez réessayer.")
         menu()
@@ -21,3 +22,6 @@ def partie1question1():
 
 def partie1question2():
     return # TODO
+
+if __name__ == "__main__":
+    menu()
