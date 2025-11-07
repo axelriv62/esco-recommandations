@@ -9,6 +9,7 @@ def menu():
     print("Projet BUT3APP - Système de recommandation avec Neo4j - Axel Rivière & Quentin Tripognez")
     print("1. Partie 1 - Question 1")
     print("2. Partie 2 - Question 2")
+    print("4. Partie 1 - Question 4 : Similarité entre métiers")
     print("9. Quitter")
 
     choice = input("Votre choix: ")
@@ -18,6 +19,10 @@ def menu():
     elif choice == '2':
         competence = input("Quelle compétence ?")
         partie1question2(competence)
+    elif choice == '4':
+        code1 = input("Code du premier métier (ex: 3115) : ").strip()
+        code2 = input("Code du deuxième métier (ex: 1219) : ").strip()
+        partie1question4(code1, code2)
     elif choice == '9':
         print("Au revoir !")
         return
@@ -87,8 +92,67 @@ def partie1question2(skill_or_knowledge: str):
 
     print(f"{'=' * 80}\n")
 
-def partie1question4():
-    return # TODO
+def partie1question4(code1: str, code2: str):
+    """
+    Question 4 - Similarité entre métiers
+    Cette fonction calcule la similarité de Jaccard entre deux métiers
+    (Occupations) en se basant sur l'ensemble de leurs compétences (Skill),
+    qu'elles soient obligatoires ou optionnelles.
+    """
+
+    query = """
+    // Récupérer les compétences du premier métier
+    MATCH (o1:Occupation {code: $code1})-[r1:REQUIRES]->(s1:Skill)
+    WHERE r1.type IN ['required', 'optional']
+    WITH o1, collect(DISTINCT s1) AS skills1
+
+    // Récupérer les compétences du deuxième métier
+    MATCH (o2:Occupation {code: $code2})-[r2:REQUIRES]->(s2:Skill)
+    WHERE r2.type IN ['required', 'optional']
+    WITH skills1, collect(DISTINCT s2) AS skills2
+
+    // Calcul de l'intersection et de l'union
+    WITH
+        [x IN skills1 WHERE x IS NOT NULL] AS m1,
+        [x IN skills2 WHERE x IS NOT NULL] AS m2,
+        [x IN skills1 WHERE x IN skills2] AS inter
+
+    WITH
+        m1,
+        m2,
+        inter,
+        size(inter) AS intersection,
+        size(m1) + size(m2) - size(inter) AS union
+
+    RETURN
+        intersection,
+        union,
+        CASE
+            WHEN union > 0 THEN toFloat(intersection) / toFloat(union)
+            ELSE 0.0
+        END AS jaccard_similarity
+    """
+
+    res = graph.run(query, code1=code1, code2=code2).data()
+
+    print(f"\n{'=' * 80}")
+    print(f"Similarité entre les métiers {code1} et {code2}")
+    print(f"{'=' * 80}\n")
+
+    if res:
+        result = res[0]
+        intersection = result['intersection']
+        union = result['union']
+        similarity = result['jaccard_similarity']
+
+        print(f"Intersection (compétences en commun) : {intersection}")
+        print(f"Union (compétences totales distinctes) : {union}")
+        print(f"Score de similarité (Jaccard)        : {similarity:.5f}")
+    else:
+        print(f"Impossible de calculer la similarité entre '{code1}' et '{code2}'")
+
+    return res
+
 
 if __name__ == "__main__":
     menu()
