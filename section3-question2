@@ -1,0 +1,14 @@
+MATCH (o:Occupation)-[r:REQUIRES]->(s:Skill {name: "Maîtriser Excel"})
+RETURN
+  o.label AS metier,
+  o.code  AS code,
+  r.type  AS type_exigence
+ORDER BY r.type, o.label;
+
+
+MATCH (o:Occupation)-[r:NEEDS_KNOWLEDGE]->(k:Knowledge {name: "Droit du travail"})
+RETURN
+  o.label AS metier,
+  o.code  AS code,
+  r.type  AS type_exigence
+ORDER BY r.type, o.label;
