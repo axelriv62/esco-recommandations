@@ -7,31 +7,31 @@ graph = Graph(consts.NEO4J_URI, auth=(consts.NEO4J_USERNAME, consts.NEO4J_PASSWO
 # Menu principal
 def menu():
     print("Projet BUT3APP - Système de recommandation avec Neo4j - Axel Rivière & Quentin Tripognez")
-    print("\n1. Partie 1 - Question 1")
-    print("2. Partie 2 - Question 2")
-    print("3. Partie 1 - Question 3")
-    print("4. Partie 1 - Question 4 : Similarité entre métiers")
-    print("5. Partie 1 - Question 5")
+    print("\n1. Partie 2 - Question 1 : Fiche métier")
+    print("2. Partie 2 - Question 2 : Compétence/connaissance")
+    print("3. Partie 2 - Question 3 : Similarité entre compétences")
+    print("4. Partie 2 - Question 4 : Similarité entre métiers")
+    print("5. Partie 2 - Question 5 : Recommandation de métier")
     print("9. Quitter\n")
 
     choice = input("Votre choix: ")
 
     if choice == '1':
         code_metier = input("\nVeillez entrer le code du métier souhaité: ")
-        partie1question1(code_metier)
+        partie2question1(code_metier)
         menu()
     elif choice == '2':
-        competence = input("Quelle compétence ?")
-        partie1question2(competence)
+        competence = input("\nQuelle compétence ?")
+        partie2question2(competence)
     elif choice == '3':
         element1 = input("\nVeuillez entrer le nom de la première compétence/connaissance: ")
         element2 = input("Veuillez entrer le nom de la deuxième compétence/connaissance: ")
-        partie1question3(element1, element2)
+        partie2question3(element1, element2)
         menu()
     elif choice == '4':
-        code1 = input("Code du premier métier (ex: 3115) : ").strip()
+        code1 = input("\nCode du premier métier (ex: 3115) : ").strip()
         code2 = input("Code du deuxième métier (ex: 1219) : ").strip()
-        partie1question4(code1, code2)
+        partie2question4(code1, code2)
     elif choice == '5':
         menu()
     elif choice == '9':
@@ -41,10 +41,14 @@ def menu():
         print("Choix invalide, veuillez réessayer.")
         menu()
 
-# Partie 1 - Question 1 - Fiche métier
-# Cette fonctionnalité permet aux utilisateurs d’afficher un métier donné avec toutes
-# les compétences associées et les connaissances, ainsi que les autres appellations.
-def partie1question1(code_metier: str):
+def partie2question1(code_metier: str):
+    """
+    Partie 2 - Question 1 - Fiche métier
+    Cette fonctionnalité permet aux utilisateurs d’afficher un métier donné avec toutes
+    les compétences associées et les connaissances, ainsi que les autres appellations.
+    :param code_metier: Code du métier à rechercher
+    :return: Dictionnaire avec les résultats de la requête
+    """
     query = """
     MATCH (o:Occupation {code: $code_metier})
     OPTIONAL MATCH (o)-[:REQUIRES]->(comp:Skill)
@@ -67,10 +71,14 @@ def partie1question1(code_metier: str):
 
     return res
 
-# Partie 1 - Question 2 - Compétence/connaissance
-# Cette fonctionnalité permet de voir une compétence ou/et connaissance donnée où
-# elle est requise ou facultative et pour quels métiers
-def partie1question2(skill_or_knowledge: str):
+def partie2question2(skill_or_knowledge: str):
+    """
+    Partie 2 - Question 2 - Compétence/connaissance
+    Cette fonctionnalité permet de voir une compétence ou/et connaissance donnée où
+    elle est requise ou facultative et pour quels métiers
+    :param skill_or_knowledge: Nom de la compétence ou connaissance à rechercher
+    :return: Dictionnaire avec les résultats de la requête
+    """
     print(f"\n{'=' * 80}")
     print(f"Recherche pour : {skill_or_knowledge}")
     print(f"{'=' * 80}\n")
@@ -123,12 +131,17 @@ def partie1question2(skill_or_knowledge: str):
 
     print(f"{'=' * 80}\n")
 
-# Partie 1 - Question 3 - Similarité entre compétences
-# Cette fonction permet de calculer la similarité entre deux compétences données, en
-# se basant sur leur co-occurrence dans les mêmes métiers. Le calcul de similarité doit
-# également prendre en compte le caractère obligatoire ou facultatif de chaque compétence
-# dans ces métiers.
-def partie1question3(element1: str, element2: str):
+def partie2question3(element1: str, element2: str):
+    """
+    Partie 2 - Question 3 - Similarité entre compétences
+    Cette fonction permet de calculer la similarité entre deux compétences données, en
+    se basant sur leur co-occurrence dans les mêmes métiers. Le calcul de similarité doit
+    également prendre en compte le caractère obligatoire ou facultatif de chaque compétence
+    dans ces métiers.
+    :param element1: Première compétence/connaissance
+    :param element2: Deuxième compétence/connaissance
+    :return: Dictionnaire avec les résultats de la similarité
+    """
     query = """
     MATCH (e1)
     WHERE (e1:Skill OR e1:Knowledge) AND e1.name = $element1
@@ -182,14 +195,16 @@ def partie1question3(element1: str, element2: str):
 
     return res
 
-def partie1question4(code1: str, code2: str):
+def partie2question4(code1: str, code2: str):
     """
     Question 4 - Similarité entre métiers
     Cette fonction calcule la similarité de Jaccard entre deux métiers
     (Occupations) en se basant sur l'ensemble de leurs compétences (Skill),
     qu'elles soient obligatoires ou optionnelles.
+    :param code1: Code du premier métier
+    :param code2: Code du deuxième métier
+    :return: Dictionnaire avec les résultats de la similarité
     """
-
     query = """
     // Récupérer les compétences du premier métier
     MATCH (o1:Occupation {code: $code1})-[r1:REQUIRES]->(s1:Skill)
@@ -243,64 +258,13 @@ def partie1question4(code1: str, code2: str):
 
     return res
 
-# Partie 1 - Question 3 - Similarité entre compétences
-# Cette fonction permet de calculer la similarité entre deux compétences données, en
-# se basant sur leur co-occurrence dans les mêmes métiers. Le calcul de similarité doit
-# également prendre en compte le caractère obligatoire ou facultatif de chaque compétence
-# dans ces métiers.
-def partie1question3(element1: str, element2: str):
-    query = """
-    MATCH (e1)
-    WHERE (e1:Skill OR e1:Knowledge) AND e1.name = $element1
-    MATCH (e2)
-    WHERE (e2:Skill OR e2:Knowledge) AND e2.name = $element2
-
-    // Métiers ayant e1
-    OPTIONAL MATCH (e1)<-[r1]-(o1:Occupation)
-    WHERE type(r1) IN ['REQUIRES', 'NEEDS_KNOWLEDGE']
-
-    // Métiers ayant e2
-    WITH e1, e2, collect(DISTINCT o1) as metiers_e1
-    OPTIONAL MATCH (e2)<-[r2]-(o2:Occupation)
-    WHERE type(r2) IN ['REQUIRES', 'NEEDS_KNOWLEDGE']
-
-    // Métiers ayant les deux (intersection)
-    WITH e1, e2, metiers_e1, collect(DISTINCT o2) as metiers_e2
-    OPTIONAL MATCH (e1)<-[r1_inter]-(o_inter:Occupation)-[r2_inter]->(e2)
-    WHERE type(r1_inter) IN ['REQUIRES', 'NEEDS_KNOWLEDGE']
-      AND type(r2_inter) IN ['REQUIRES', 'NEEDS_KNOWLEDGE']
-
-    WITH metiers_e1, metiers_e2, collect(DISTINCT o_inter) as metiers_intersection
-
-    // Filtrer les valeurs null avant de calculer la taille
-    WITH [x IN metiers_e1 WHERE x IS NOT NULL] as m1,
-         [x IN metiers_e2 WHERE x IS NOT NULL] as m2,
-         [x IN metiers_intersection WHERE x IS NOT NULL] as m_inter
-
-    WITH size(m_inter) as intersection,
-         size(m1) + size(m2) - size(m_inter) as union
-
-    RETURN intersection, union,
-           CASE WHEN union > 0
-                THEN toFloat(intersection) / toFloat(union)
-                ELSE 0.0
-           END as jaccard_similarity
+def partie2question5():
     """
-    res = graph.run(query, element1=element1, element2=element2).data()
-
-    if res:
-        result = res[0]
-        intersection = result['intersection']
-        union = result['union']
-        similarity = result['jaccard_similarity']
-
-        print(f"Intersection (métiers en commun): {intersection}")
-        print(f"Union (métiers totaux): {union}")
-        print(f"Score de similarité: {similarity:.4f}")
-    else:
-        print(f"Impossible de calculer la similarité entre '{element1}' et '{element2}'")
-
-    return res
+    Question 5. Recommandation métier :
+    Cette fonctionnalité permet de retourner une liste des métiers à recommander
+    au utilisateur selon ses compétences données.
+    """
+    pass # todo
 
 if __name__ == "__main__":
     print("\nProjet BUT3APP - Système de recommandation avec Neo4j - Axel Rivière & Quentin Tripognez")
