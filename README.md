@@ -1,6 +1,9 @@
 # Projet BDD - Système de recommandation avec Neo4j 
 Par Axel Rivière et Quentin Tripognez (BUT3 APP)
 
+## Rapport
+Vous pouvez trouver le rapport du projet [ici](docs/rapport-riviere-tripognez.pdf).
+
 ## Lancer le projet
 ```commandline
 python -m venv venv
