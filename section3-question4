@@ -1,0 +1,28 @@
+MATCH (o1:Occupation {code: "3115"})-[r1:REQUIRES]->(s1:Skill)
+WHERE r1.type IN ['required', 'optional']
+WITH o1, collect(DISTINCT s1) AS skills1
+
+MATCH (o2:Occupation {code: "1219"})-[r2:REQUIRES]->(s2:Skill)
+WHERE r2.type IN ['required', 'optional']
+WITH skills1, collect(DISTINCT s2) AS skills2
+
+WITH
+  [x IN skills1 WHERE x IS NOT NULL] AS m1,
+  [x IN skills2 WHERE x IS NOT NULL] AS m2,
+  [x IN skills1 WHERE x IN skills2]  AS inter
+
+WITH
+  m1,
+  m2,
+  inter,
+  size(inter)                         AS intersection,
+  size(m1) + size(m2) - size(inter)   AS union
+
+RETURN
+  intersection,
+  union,
+  CASE
+    WHEN union > 0
+    THEN toFloat(intersection) / toFloat(union)
+    ELSE 0.0
+  END AS jaccard_similarity;
