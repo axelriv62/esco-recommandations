@@ -33,15 +33,15 @@ def menu():
         menu()
     elif choice == '3':
         print("\nExemple d'utilisation : donner des conseils sur les finances publiques / appliquer la gestion des conflits")
-        element1 = input("Nom de la première compétence/connaissance : ")
-        element2 = input("Nom de la deuxième compétence/connaissance : ")
-        partie2question3(element1, element2)
+        skill_or_knowledge1 = input("Nom de la première compétence/connaissance : ")
+        skill_or_knowledge2 = input("Nom de la deuxième compétence/connaissance : ")
+        partie2question3(skill_or_knowledge1, skill_or_knowledge2)
         menu()
     elif choice == '4':
         print("\nExemple d'utilisation : 192  (secrétaire d'État) / 19 (chargé de mission logement/chargée de mission logement")
-        code1 = input("Code du premier métier : ").strip()
-        code2 = input("Code du deuxième métier : ").strip()
-        partie2question4(code1, code2)
+        job_code1 = input("Code du premier métier : ").strip()
+        job_code2 = input("Code du deuxième métier : ").strip()
+        partie2question4(job_code1, job_code2)
         menu()
     elif choice == '5':
         print("\nExemple d'utilisation : donner des conseils sur les finances publiques, appliquer la gestion des conflits")
@@ -152,27 +152,27 @@ def partie2question2(skill_or_knowledge: str):
     else:
         print(f"Métiers où la {type_str} est optionnelle : Aucun\n")
 
-def partie2question3(element1: str, element2: str):
+def partie2question3(skill_or_knowledge1: str, skill_or_knowledge2: str):
     """
     Partie 2 - Question 3 - Similarité entre compétences
     Cette fonction permet de calculer la similarité entre deux compétences données, en
     se basant sur leur co-occurrence dans les mêmes métiers. Le calcul de similarité doit
     également prendre en compte le caractère obligatoire ou facultatif de chaque compétence
     dans ces métiers.
-    :param element1: Première compétence/connaissance
-    :param element2: Deuxième compétence/connaissance
+    :param skill_or_knowledge1: Première compétence/connaissance
+    :param skill_or_knowledge2: Deuxième compétence/connaissance
     :return: Dictionnaire avec les résultats de la similarité
     """
 
     print(f"\n{'=' * 80}")
-    print(f"Similarité entre les éléments : '{element1}' et '{element2}'")
+    print(f"Similarité entre les éléments : '{skill_or_knowledge1}' et '{skill_or_knowledge2}'")
     print(f"{'=' * 80}\n")
 
     query = """
     MATCH (e1)
-    WHERE (e1:Skill OR e1:Knowledge) AND e1.name = $element1
+    WHERE (e1:Skill OR e1:Knowledge) AND e1.name = $skill_or_knowledge1
     MATCH (e2)
-    WHERE (e2:Skill OR e2:Knowledge) AND e2.name = $element2
+    WHERE (e2:Skill OR e2:Knowledge) AND e2.name = $skill_or_knowledge2
 
     // Métiers ayant e1
     OPTIONAL MATCH (e1)<-[r1]-(o1:Occupation)
@@ -205,7 +205,7 @@ def partie2question3(element1: str, element2: str):
                 ELSE 0.0
            END as jaccard_similarity
     """
-    res = graph.run(query, element1=element1, element2=element2).data()
+    res = graph.run(query, skill_or_knowledge1=skill_or_knowledge1, skill_or_knowledge2=skill_or_knowledge2).data()
 
     if res:
         result = res[0]
@@ -217,28 +217,28 @@ def partie2question3(element1: str, element2: str):
         print(f"Métiers totaux (union): {union}")
         print(f"Score de similarité: {similarity:.4f}")
     else:
-        print(f"Impossible de calculer la similarité entre '{element1}' et '{element2}'")
+        print(f"Impossible de calculer la similarité entre '{skill_or_knowledge1}' et '{skill_or_knowledge2}'")
 
     return res
 
-def partie2question4(code1: str, code2: str):
+def partie2question4(job_code1: str, job_code2: str):
     """
     Question 4 - Similarité entre métiers
     Cette fonction calcule la similarité de Jaccard entre deux métiers
     (Occupations) en se basant sur l'ensemble de leurs compétences (Skill),
     qu'elles soient obligatoires ou optionnelles.
-    :param code1: Code du premier métier
-    :param code2: Code du deuxième métier
+    :param job_code1: Code du premier métier
+    :param job_code2: Code du deuxième métier
     :return: Dictionnaire avec les résultats de la similarité
     """
     query = """
     // Récupérer les compétences du premier métier
-    MATCH (o1:Occupation {code: $code1})-[r1:REQUIRES]->(s1:Skill)
+    MATCH (o1:Occupation {code: $job_code1})-[r1:REQUIRES]->(s1:Skill)
     WHERE r1.type IN ['required', 'optional']
     WITH o1, collect(DISTINCT s1) AS skills1
 
     // Récupérer les compétences du deuxième métier
-    MATCH (o2:Occupation {code: $code2})-[r2:REQUIRES]->(s2:Skill)
+    MATCH (o2:Occupation {code: $job_code2})-[r2:REQUIRES]->(s2:Skill)
     WHERE r2.type IN ['required', 'optional']
     WITH skills1, collect(DISTINCT s2) AS skills2
 
@@ -264,10 +264,10 @@ def partie2question4(code1: str, code2: str):
         END AS jaccard_similarity
     """
 
-    res = graph.run(query, code1=code1, code2=code2).data()
+    res = graph.run(query, job_code1=job_code1, job_code2=job_code2).data()
 
     print(f"\n{'=' * 80}")
-    print(f"Similarité entre les métiers {code1} et {code2}")
+    print(f"Similarité entre les métiers {job_code1} et {job_code2}")
     print(f"{'=' * 80}\n")
 
     if res:
@@ -280,7 +280,7 @@ def partie2question4(code1: str, code2: str):
         print(f"Compétences totales distinctes (union) : {union}")
         print(f"Score de similarité (Jaccard) : {similarity:.5f}")
     else:
-        print(f"Impossible de calculer la similarité entre '{code1}' et '{code2}'")
+        print(f"Impossible de calculer la similarité entre '{job_code1}' et '{job_code2}'")
 
     return res
 
